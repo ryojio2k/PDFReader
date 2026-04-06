@@ -2,6 +2,7 @@ import os
 import json
 import TkEasyGUI as teg
 import pdf_reader
+import pdf_to_csv
 
 # 入力フレーム
 frame1 = teg.Frame('設定',
@@ -14,7 +15,8 @@ frame1 = teg.Frame('設定',
       teg.FileBrowse(target_key='-TARGETPATH-', file_types=(("PDF File",".pdf"),))
     ],
     [
-      teg.Submit(button_text='実行', key='button_execute')
+      teg.Submit(button_text='txt', key='button_execute'),
+      teg.Submit(button_text='csv', key='button_csv')
     ]
   ]
 )
@@ -52,11 +54,15 @@ while window.is_alive():
     break
 
   # ボタンが押された場合
-  if event == 'button_execute':
-    target_path = str(values['-TARGETPATH-'])
+  if event == 'button_execute' or event == 'button_csv':
+    target_path : str = str(values['-TARGETPATH-'])
     output = window['-OUTPUT-']
 
-    str_finished = pdf_reader.read(target_path, window, output)
+    str_finished : str = ''
+    if event == 'button_execute':
+      str_finished = pdf_reader.read(target_path, window, output)
+    elif event == 'button_csv':
+      str_finished = pdf_to_csv.read(target_path, window, output)
 
     teg.popup_info(str_finished, "PDF Reader")
 

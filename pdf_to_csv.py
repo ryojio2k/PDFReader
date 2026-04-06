@@ -2,10 +2,11 @@ import os
 import sys
 import datetime
 import c_logger
+import csv
 from pypdf import PdfReader
 
 def read(target_path : str, window=None, output=None):
-  """PDFファイルのテキストをファイルに抽出する
+  """PDFファイルのテキストをCSVとして抽出する
 
   Args:
       targetpath (str): 出力対象となるPDFファイルのパス
@@ -15,7 +16,7 @@ def read(target_path : str, window=None, output=None):
   Returns:
       str: 終了告知ダイアログに表示する文字列
   Exports:
-      target_filename.txt:  テキストのみ抽出したテキストファイル
+      target_filename.csv: テキストのみをcsv化したファイル  
   """
 
   # ロガー準備
@@ -33,12 +34,13 @@ def read(target_path : str, window=None, output=None):
   
   # 入力ファイルパスから出力ファイルパスを生成する
   export_dir : str = os.path.dirname(target_path)
-  export_file_name : str = os.path.splitext(os.path.basename(target_path))[0] + ".txt"
+  export_file_name : str = os.path.splitext(os.path.basename(target_path))[0] + ".csv"
   export_path : str = os.path.join(export_dir,export_file_name)
   logger.print(f"export_path:{export_path}")
 
   # 出力先ファイルをwriteで開く
   with open(export_path, "w", encoding="utf-8") as ex:
+    spamwriter = csv.writer(ex, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     # pdfファイル読み込み
     reader : PdfReader = PdfReader(target_path)
 
@@ -54,19 +56,21 @@ def read(target_path : str, window=None, output=None):
       print(text, file=ex)
       logger.print(text)
       # PDF本文
-      document : str = page.extract_text(extraction_mode='layout')
-      print(document, file=ex)
-      logger.print(document)
+      documents : str = page.extract_text()
+      for j,line in enumerate(documents.splitlines()):
+        logger.print(line)
+        words : list[str] = line.split(' ')
+        spamwriter.writerow(words)
       # ページ区切り改行
       print("\n", file=ex)
       logger.print("\n")
   
-  return f"PDFファイルのテキストを抽出しました\n{export_path}"
+  return f"PDFファイルをCSV化して抽出しました\n{export_path}"
 
 # コマンドライン実行
 if __name__ == "__main__":
   if (len(sys.argv)) == 2:
     read(sys.argv[1])
   else:
-    print("python pdf_reader.py [target_path]")
+    print("python pdf_to_csv.py [target_path]")
     sys.exit()
