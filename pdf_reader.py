@@ -54,7 +54,7 @@ def read(target_path, window=None, output=None):
       print(text, file=ex)
       logger.print(text)
       # PDF本文
-      document = page.extract_text()
+      document = page.extract_text(extraction_mode='layout')
       print(document, file=ex)
       logger.print(document)
       # ページ区切り改行
